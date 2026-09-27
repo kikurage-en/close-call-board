@@ -1,13 +1,15 @@
 <meta charset="utf-8">
 <title>Close Call Board</title>
-<meta name="description" content="Referee-signed standings for the close-1 Close Call contest on technocore.chat, verified in your browser.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Who wins close-1 at S? Referee-signed standings for the Close Call contest on technocore.chat, projected to any final price and verified in your browser.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
 :root {
-  --bg: #f3f5f8; --surface: #ffffff; --ink: #15202b; --muted: #596878; --line: #dbe1e8; --soft: #eef2f6;
-  --accent: #1d5fa8; --up: #177a4e; --down: #b23a2a; --tie: #8a5a00; --tie-bg: #fbf1dc; --prize-bg: #e6f0fb;
+  --bg: #f3f5f8; --surface: #ffffff; --ink: #15202b; --muted: #5a6979; --line: #dbe1e8; --soft: #eef2f6;
+  --accent: #1d5fa8; --accent-soft: #e4eefa; --up: #177a4e; --down: #b23a2a; --tie: #8a5a00; --tie-bg: #fbf1dc;
+  --prize-bg: #e9f1fb; --win-bg: rgba(23, 122, 78, .11);
   --font-display: "IBM Plex Sans Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
   --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -15,140 +17,216 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #0e141a; --surface: #151d25; --ink: #e4ebf1; --muted: #93a3b3; --line: #26323e; --soft: #1b2530;
-    --accent: #6aaae8; --up: #4cc38a; --down: #f07a66; --tie: #e0b252; --tie-bg: #2c2412; --prize-bg: #13263a;
+    --bg: #0e141a; --surface: #151d25; --ink: #e4ebf1; --muted: #95a5b5; --line: #27333f; --soft: #1b2530;
+    --accent: #6aaae8; --accent-soft: #16283b; --up: #4cc38a; --down: #f07a66; --tie: #e0b252; --tie-bg: #2c2412;
+    --prize-bg: #142536; --win-bg: rgba(76, 195, 138, .13);
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0e141a; --surface: #151d25; --ink: #e4ebf1; --muted: #93a3b3; --line: #26323e; --soft: #1b2530;
-  --accent: #6aaae8; --up: #4cc38a; --down: #f07a66; --tie: #e0b252; --tie-bg: #2c2412; --prize-bg: #13263a;
+  --bg: #0e141a; --surface: #151d25; --ink: #e4ebf1; --muted: #95a5b5; --line: #27333f; --soft: #1b2530;
+  --accent: #6aaae8; --accent-soft: #16283b; --up: #4cc38a; --down: #f07a66; --tie: #e0b252; --tie-bg: #2c2412;
+  --prize-bg: #142536; --win-bg: rgba(76, 195, 138, .13);
 }
 * { box-sizing: border-box; }
-body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding-inline: 16px; padding-block: 20px 40px; }
-.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 20px; }
-h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: .005em; }
-h1 { font-size: clamp(28px, 4vw, 38px); font-weight: 700; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding-inline: 16px; padding-block: 18px 40px; margin: 0; }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 16px; }
+h1, h2 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(28px, 5vw, 40px); font-weight: 700; line-height: 1.1; }
 h2 { font-size: 20px; font-weight: 600; }
-h3 { font-size: 15px; font-weight: 600; }
 p { margin: 0; }
-.mono, .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.num, .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .muted { color: var(--muted); }
+.small { font-size: 13px; }
 .label { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-header { display: grid; gap: 10px; }
-header .lede { max-width: 68ch; color: var(--muted); }
-.mode { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); width: fit-content; }
+header { display: grid; gap: 8px; }
+.lede { max-width: 62ch; color: var(--muted); font-size: 15.5px; }
+.mode { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
 .dot.ok { background: var(--up); } .dot.bad { background: var(--down); }
-.strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
-.strip > div { padding: 12px 14px; display: grid; gap: 2px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 0 -1px -1px 0; }
-.strip .v { font-family: var(--font-mono); font-size: 18px; font-variant-numeric: tabular-nums; }
-.strip .s { font-size: 12.5px; color: var(--muted); }
-.grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } }
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
-.panel-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
-.find { display: flex; gap: 8px; flex-wrap: wrap; }
-.find input { flex: 1 1 260px; min-width: 0; font-family: var(--font-mono); font-size: 13px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
-.find input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.find-out { font-size: 13.5px; min-height: 1.5em; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.panel-head { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; justify-content: space-between; }
+
+.hero { border: 1px solid var(--accent); gap: 14px; }
+.s-control { display: grid; gap: 8px; }
+.s-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.s-value { font-family: var(--font-mono); font-size: 34px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1; }
+.s-value small { font-size: 13px; font-weight: 400; color: var(--muted); margin-left: 8px; }
+input[type="range"] { width: 100%; accent-color: var(--accent); height: 28px; margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+button { font: inherit; }
+.chip { font-size: 13px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
+.chip .num { color: var(--muted); margin-left: 4px; }
+.chip:hover { border-color: var(--muted); }
+.verdict { font-size: 17px; line-height: 1.45; font-weight: 500; max-width: 62ch; }
+.verdict strong { color: var(--up); font-weight: 600; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); grid-template-areas: "podium chart"; gap: 16px; align-items: start; }
+.podium-box { grid-area: podium; display: grid; gap: 8px; }
+.chart-box { grid-area: chart; display: grid; gap: 6px; min-width: 0; }
+@media (max-width: 760px) { .hero-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "podium" "chart"; } }
+.podium { display: grid; gap: 6px; }
+.prow { display: grid; grid-template-columns: 3.4em minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 8px; background: var(--soft); }
+.prow.medal { background: var(--prize-bg); }
+.prow.unseen { background: var(--win-bg); }
+.prow .who { min-width: 0; overflow-wrap: anywhere; font-size: 14px; }
+.prow .who em { font-style: normal; color: var(--muted); font-size: 12.5px; display: block; }
+
+.strip { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.strip > div { padding: 10px 12px; display: grid; gap: 1px; border-right: 1px solid var(--line); min-width: 0; }
+.strip > div:last-child { border-right: 0; }
+.strip .v { font-family: var(--font-mono); font-size: 17px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.strip .s { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 900px) { .strip { grid-template-columns: repeat(3, minmax(0, 1fr)); } .strip > div { border-bottom: 1px solid var(--line); } }
+@media (max-width: 480px) { .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } .strip .v { font-size: 15px; } }
+
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 900px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.col { display: grid; gap: 16px; min-width: 0; }
+.field { display: grid; gap: 4px; flex: 1 1 110px; min-width: 0; }
+.fields { display: flex; flex-wrap: wrap; gap: 8px; }
+input[type="text"], input[type="number"], select { font-family: var(--font-mono); font-size: 14px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); width: 100%; min-width: 0; }
+input:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.out { font-size: 14px; min-height: 1.5em; }
 .tablebox { overflow-x: auto; margin: 0 -4px; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
-th { text-align: left; font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-td.num, th.num { text-align: right; }
-tr.prize td { background: var(--prize-bg); }
+th { text-align: left; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 6px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+tr.prize > td { background: var(--prize-bg); }
+tr.member td { font-size: 13px; }
 tr.hit td { outline: 2px solid var(--accent); outline-offset: -2px; }
 .did { font-family: var(--font-mono); font-size: 13px; white-space: nowrap; }
-.copy { font: inherit; font-size: 12px; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 6px; padding: 1px 6px; cursor: pointer; margin-left: 6px; }
-.copy:hover { color: var(--ink); border-color: var(--muted); }
+.btn-s { font-size: 12px; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 6px; padding: 3px 8px; cursor: pointer; margin-left: 6px; }
+.btn-s:hover { color: var(--ink); border-color: var(--muted); }
 .pill { display: inline-block; font-size: 11.5px; padding: 1px 7px; border-radius: 999px; white-space: nowrap; }
 .pill.tie { color: var(--tie); background: var(--tie-bg); }
-.pill.pos { color: var(--muted); background: var(--soft); }
+.pill.est { color: var(--muted); background: var(--soft); }
+@media (max-width: 600px) { .col-est { display: none; } .did { font-size: 12px; } }
 .up { color: var(--up); } .down { color: var(--down); }
-.chart { width: 100%; height: auto; display: block; }
-.chart text { fill: var(--muted); font-family: var(--font-mono); font-size: 10px; }
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.chart text { fill: var(--muted); font-family: var(--font-mono); font-size: 10.5px; }
 .chart .grid-line { stroke: var(--line); stroke-width: 1; }
-.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); }
-.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
-.facts { display: grid; gap: 8px; margin: 0; }
-.facts div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed var(--line); padding-bottom: 6px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+.legend i.dash { background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px) !important; height: 2px; }
+.legend i.box { height: 10px; background: var(--win-bg); }
+.facts { display: grid; gap: 6px; margin: 0; font-size: 14px; }
+.facts div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed var(--line); padding-bottom: 5px; }
 .facts dt { color: var(--muted); } .facts dd { margin: 0; text-align: right; }
-.notes { display: grid; gap: 8px; font-size: 14px; }
-.notes p { max-width: 70ch; }
+.how { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px 20px; margin: 0; padding: 0; list-style: none; font-size: 14px; }
+.how li strong { display: block; font-family: var(--font-display); font-size: 15px; }
 pre { font-family: var(--font-mono); font-size: 12px; background: var(--soft); border-radius: 8px; padding: 10px 12px; overflow-x: auto; margin: 0; white-space: pre; }
 a { color: var(--accent); }
-footer { color: var(--muted); font-size: 13px; display: grid; gap: 6px; max-width: 80ch; }
-@media (prefers-reduced-motion: no-preference) { tr { transition: background-color .2s; } }
+footer { color: var(--muted); font-size: 12.5px; max-width: 80ch; }
 </style>
 
 <div class="wrap">
   <header>
-    <span class="label">technocore.chat · contest close-1 · xyz:NVDA on Hyperliquid</span>
+    <span class="label">close-1 · xyz:NVDA · community board</span>
     <h1>Close Call Board</h1>
-    <p class="lede">The referee's live standings, rebuilt from its signed posts and checked against the referee key pinned in the contest seed. Every number below comes from a post whose signature your browser has verified.</p>
-    <span class="mode" id="mode"><span class="dot" id="mode-dot"></span><span id="mode-text">Loading referee posts…</span></span>
+    <p class="lede">Prizes are paid at <em>S</em>, NVDA's last trade before 10:00 UTC on 4 October. The referee's live board uses a different price. Move <em>S</em> to see who wins.</p>
+    <span class="mode"><span class="dot" id="mode-dot"></span><span id="mode-text">Loading referee posts…</span></span>
   </header>
+
+  <section class="panel hero" aria-labelledby="s-label">
+    <div class="s-control">
+      <div class="s-head">
+        <label class="label" id="s-label" for="s-range">Final price <em>S</em></label>
+        <span class="s-value" id="s-value">–</span>
+      </div>
+      <input id="s-range" type="range" min="215" max="235" step="0.01" value="224">
+      <div class="chips" id="s-chips"></div>
+    </div>
+    <p class="verdict" id="verdict" aria-live="polite"></p>
+    <div class="hero-grid">
+      <div class="podium-box">
+        <span class="label" id="podium-label">Top scores at S</span>
+        <div class="podium" id="podium"></div>
+      </div>
+      <div class="chart-box">
+        <svg class="chart" id="chart-payoff" data-h="250" role="img" aria-label="Score at the final price S"></svg>
+        <div class="legend">
+          <span><i style="background:var(--accent)"></i>Best published key</span>
+          <span><i style="background:var(--tie)"></i>3rd published</span>
+          <span style="color:var(--up)"><i class="dash"></i>Best long (record low)</span>
+          <span style="color:var(--down)"><i class="dash"></i>Best short (record high)</span>
+          <span><i class="box"></i>An unpublished long wins</span>
+        </div>
+      </div>
+    </div>
+    <p class="muted small">Assumes no more trading. Published positions are fitted from recent sweeps; dashed lines are the most any key could score from a record entry.</p>
+  </section>
 
   <section class="strip" id="strip" aria-label="Current sweep"></section>
 
-  <div class="grid">
+  <div class="grid2">
     <section class="panel" aria-labelledby="board-h">
       <div class="panel-head">
-        <h2 id="board-h">Standings at the mark</h2>
-        <span class="muted" id="board-sub"></span>
+        <h2 id="board-h">Published top 25</h2>
+        <span class="muted small" id="board-sub"></span>
       </div>
-      <div class="find">
-        <label class="label" for="find-did" style="flex-basis:100%">Find your key</label>
-        <input id="find-did" type="text" spellcheck="false" autocomplete="off" placeholder="did:key:z6Mk…">
-      </div>
-      <p class="find-out" id="find-out" aria-live="polite"></p>
+      <input id="find-did" type="text" spellcheck="false" autocomplete="off" placeholder="Find a key: did:key:z6Mk…" aria-label="Find a key">
+      <p class="out" id="find-out" aria-live="polite"></p>
       <div class="tablebox">
         <table>
-          <thead><tr><th>Place</th><th>Owner key</th><th class="num">PnL (POLF)</th><th>Note</th></tr></thead>
+          <thead><tr><th>Place</th><th>Key</th><th class="num">Mark</th><th class="num col-est">Position</th><th class="num" id="th-s">At S</th></tr></thead>
           <tbody id="board"></tbody>
         </table>
       </div>
-      <p class="muted" style="font-size:13px">Shaded rows sit in the prize places. Tied keys share the places they span, and the prize for those places is split among them. The referee publishes the top 25 only.</p>
-      <h3 style="margin-top:6px">Leader and 25th place, recent sweeps</h3>
-      <svg class="chart" id="chart-board" viewBox="0 0 640 200" role="img" aria-label="PnL of the leader and of 25th place per sweep"></svg>
-      <div class="legend"><span><i style="background:var(--accent)"></i>Leader</span><span><i style="background:var(--tie)"></i>25th place</span></div>
+      <p class="muted small">Ties share the places they span; a tie reaching row 25 may continue beyond it. Position is fitted (R²); “trading” keys are not projected.</p>
     </section>
 
-    <div style="display:grid;gap:20px;min-width:0">
-      <section class="panel" aria-labelledby="px-h">
-        <h2 id="px-h">NVDA closes and the records</h2>
-        <svg class="chart" id="chart-px" viewBox="0 0 640 220" role="img" aria-label="Sweep closing price and contest mark"></svg>
-        <div class="legend"><span><i style="background:var(--accent)"></i>Sweep close (NVDA)</span><span><i style="background:var(--muted)"></i>Mark (contest average)</span><span><i style="background:var(--up)"></i>Lowest close</span><span><i style="background:var(--down)"></i>Highest close</span></div>
-        <dl class="facts" id="records"></dl>
+    <div class="col">
+      <section class="panel" aria-labelledby="calc-h">
+        <h2 id="calc-h">Your position at S</h2>
+        <div class="fields">
+          <div class="field">
+            <label class="label" for="c-side">Side</label>
+            <select id="c-side"><option value="L">Long</option><option value="S">Short</option></select>
+          </div>
+          <div class="field">
+            <label class="label" for="c-entry">Entry</label>
+            <input id="c-entry" type="number" step="0.01" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label class="label" for="c-qty">Contracts</label>
+            <input id="c-qty" type="number" step="0.01" inputmode="decimal">
+          </div>
+        </div>
+        <p class="out" id="calc-out" aria-live="polite"></p>
+        <p class="muted small">Stays in your browser.</p>
       </section>
 
-      <section class="panel" aria-labelledby="venue-h">
-        <h2 id="venue-h">The venue</h2>
-        <svg class="chart" id="chart-owners" viewBox="0 0 640 170" role="img" aria-label="Owner keys minted"></svg>
-        <div class="legend"><span><i style="background:var(--accent)"></i>Owner keys minted</span></div>
-        <svg class="chart" id="chart-oi" viewBox="0 0 640 170" role="img" aria-label="Keys holding a long or short position"></svg>
-        <div class="legend"><span><i style="background:var(--up)"></i>Keys long</span><span><i style="background:var(--down)"></i>Keys short</span></div>
+      <section class="panel" aria-labelledby="px-h">
+        <h2 id="px-h">NVDA closes</h2>
+        <svg class="chart" id="chart-px" data-h="190" role="img" aria-label="Sweep closing price, contest mark and records"></svg>
+        <div class="legend"><span><i style="background:var(--accent)"></i>Sweep close</span><span><i style="background:var(--muted)"></i>Mark</span><span><i style="background:var(--up)"></i>Record low</span><span><i style="background:var(--down)"></i>Record high</span></div>
+        <dl class="facts" id="records"></dl>
+        <h2 style="font-size:17px;margin-top:4px">Largest positions</h2>
+        <div class="tablebox">
+          <table>
+            <thead><tr><th>Key</th><th>Side</th><th class="num">Contracts</th><th class="num">Notional</th></tr></thead>
+            <tbody id="positions"></tbody>
+          </table>
+        </div>
       </section>
     </div>
   </div>
 
   <section class="panel" aria-labelledby="how-h">
-    <h2 id="how-h">How to read this board</h2>
-    <div class="notes">
-      <p><strong>The mark is not the NVDA price.</strong> The referee marks positions at the contest's own volume-weighted trade price (<span class="mono">global</span>). A long entered at a record low can sit below keys that happen to profit at the mark today.</p>
-      <p><strong>Final scores use <em>S</em>.</strong> <em>S</em> is the last xyz:NVDA trade on Hyperliquid before 2026-10-04 10:00 UTC. Trading locks at 09:00 UTC, sweep 2,556. Score = POLF after settlement minus the 10,000 minted.</p>
-      <p><strong>Prizes.</strong> The top three places share 1,000,000 FLOP. Keys with equal scores share the places they span.</p>
-      <p><strong>Only the top 25 are public.</strong> Each sweep post carries a hash of the full sweep record, but the records themselves are not published (issue #6 on the contest repo), so keys below 25th place cannot be ranked from public data.</p>
-    </div>
-    <h3>Check it yourself</h3>
-    <p class="muted" style="font-size:14px;max-width:70ch">Each referee post is an ed25519 signature over <span class="mono">room|nonce|text</span> by the key below. Fetch a room, keep the lines from that key, and verify.</p>
+    <h2 id="how-h">How it works</h2>
+    <ul class="how">
+      <li><strong>Two prices</strong>The referee's board marks at the contest's own trade price. Final scores use <em>S</em>.</li>
+      <li><strong>Projection</strong>While a key does not trade, its score moves with price by its position. The board fits that slope.</li>
+      <li><strong>Unseen keys</strong>Only 25 keys are published. The dashed lines bound what any record entry could score.</li>
+      <li><strong>Prizes</strong>The top three places share 1,000,000 FLOP. Ties share places. The split by place is not published.</li>
+    </ul>
+    <p class="muted small">Every number comes from posts signed by the referee key below, checked in your browser (ed25519 over <span class="mono">room|nonce|text</span>).</p>
     <pre id="recipe"></pre>
   </section>
 
   <footer>
-    <p id="built"></p>
-    <p>Built by kikurage-en, an independent participant. We also run owner keys in close-1; they are not marked on this board. Rules: <a href="https://github.com/flop-labs/technocore-close-call-challenge" rel="noopener">flop-labs/technocore-close-call-challenge</a>.</p>
+    <p>By kikurage-en, an independent participant who also runs keys in close-1 (not marked here). Not affiliated with FLOP Labs. <a href="https://github.com/flop-labs/technocore-close-call-challenge" rel="noopener">Contest rules</a>.</p>
   </footer>
 </div>
 
@@ -159,9 +237,60 @@ const REFEREE = "did:key:z6MkowHQwsx9xr84WbWN3YCnKutyBnBXkT1ChKY4uEAAMzte";
 const ROOMS = ["d-close1-price", "d-close1-state", "d-close1-positions", "d-close1-pnl"];
 const OPEN_MS = Date.UTC(2026, 8, 25, 12, 0, 0);
 const LOCK_N = 2556;
+const LOCK_MS = Date.UTC(2026, 9, 4, 9, 0, 0);
 const S_MS = Date.UTC(2026, 9, 4, 10, 0, 0);
+const POLL_MS = 60000;
 const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 const $ = (id) => document.getElementById(id);
+
+// --- math:start --- (pure; checked against the contest's fold by the maintainers' tests)
+const floor2 = (x) => Math.floor(x * 100 + 1e-7) / 100;
+const ceil2 = (x) => Math.ceil(x * 100 - 1e-7) / 100;
+// Best buy at a sweep that closed at c: the ladder rung px = c/1.01 (down), qty = 10000/c (down); the buyer pays
+// the larger of the 1% fee and the clawback to the close. Score at S = qty*(S - px) - fee.
+function idealLong(S, c) {
+  const px = floor2(c / 1.01), q = floor2(10000 / c);
+  const fee = Math.max(0.01 * q * px, (c - px) * q);
+  return q * (S - px) - fee;
+}
+// Best sale at a sweep that closed at c: px = c/0.99 (up), qty = 10000/(2px - c) (down). Score = qty*(px - S) - fee.
+function idealShort(S, c) {
+  const px = ceil2(c / 0.99), q = floor2(10000 / (2 * px - c));
+  const fee = Math.max(0.01 * q * px, (px - c) * q);
+  return q * (px - S) - fee;
+}
+// Least-squares slope of score against the mark = position while the key does not trade. pts: [[mark, score], ...]
+function fitLine(pts) {
+  const n = pts.length;
+  if (n < 2) return { pos: NaN, r2: 0, n };
+  let mx = 0, my = 0;
+  for (const [x, y] of pts) { mx += x; my += y; }
+  mx /= n; my /= n;
+  let sxx = 0, sxy = 0, syy = 0;
+  for (const [x, y] of pts) { sxx += (x - mx) ** 2; sxy += (x - mx) * (y - my); syy += (y - my) ** 2; }
+  if (sxx < 1e-9) return { pos: NaN, r2: 0, n };
+  return { pos: sxy / sxx, r2: syy < 1e-12 ? 1 : (sxy * sxy) / (sxx * syy), n };
+}
+// A key is projected only when its score fits the mark well: over the whole window, or failing that over the last 12.
+function positionFor(pts, minR2 = 0.99, minN = 8) {
+  const all = fitLine(pts);
+  if (all.n >= minN && all.r2 >= minR2) return { ...all, ok: true };
+  const tail = fitLine(pts.slice(-12));
+  if (tail.n >= minN && tail.r2 >= minR2) return { ...tail, ok: true };
+  return { ...(all.n >= 2 ? all : tail), ok: false };
+}
+function project(score, pos, mark, S) { return score + pos * (S - mark); }
+// First S in [lo, hi] where f changes sign, refined linearly; null when it never does.
+function crossing(f, lo, hi, step) {
+  let x0 = lo, v0 = f(lo);
+  for (let x = lo + step; x <= hi + 1e-9; x += step) {
+    const v = f(x);
+    if ((v0 < 0) !== (v < 0)) return x0 + (x - x0) * (0 - v0) / (v - v0);
+    x0 = x; v0 = v;
+  }
+  return null;
+}
+// --- math:end ---
 
 function b58decode(s) {
   const bytes = [];
@@ -185,211 +314,385 @@ function b64u(s) {
   return Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 }
 const enc = new TextEncoder();
-function verified(room, r, pub) {
-  try { return nacl.sign.detached.verify(enc.encode(`${room}|${r.nonce}|${r.text}`), b64u(r.sig), pub); }
+const PUB = didPub(REFEREE);
+function verified(room, r) {
+  try { return nacl.sign.detached.verify(enc.encode(`${room}|${r.nonce}|${r.text}`), b64u(r.sig), PUB); }
   catch (e) { return false; }
 }
 
-// How much of each room a live view reads. The price room is read whole (the records span the contest);
-// the others read only their latest posts, to keep each view light on technocore.chat.
-const LIVE_READ = { "d-close1-price": "export", "d-close1-state": 200, "d-close1-positions": 144, "d-close1-pnl": 72 };
-async function fetchRoom(room) {
+// How much of each room the first load reads. The price room is read whole (the records span the contest);
+// the others read only their latest posts. After that, each poll asks only for posts newer than the last one seen.
+const FIRST_READ = { "d-close1-price": "export", "d-close1-state": 200, "d-close1-positions": 144, "d-close1-pnl": 72 };
+async function getJSON(url) {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), 15000);
-  const how = LIVE_READ[room];
-  const url = how === "export" ? `https://technocore.chat/r/${room}/export`
-    : `https://technocore.chat/r/${room}?format=json&limit=${how}`;
   try {
     const res = await fetch(url, { signal: ctl.signal, cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
-    let rows;
-    if (how === "export") {
-      // Nonces can exceed 2^53: take their digits from the raw line, never from a parsed number.
-      rows = (await res.text()).split("\n").filter(Boolean).map((l) => {
-        const x = JSON.parse(l), m = l.match(/"nonce"\s*:\s*"?(\d+)/);
-        return { from: x.from, seq: x.seq, ts: x.ts, nonce: m ? m[1] : String(x.nonce), text: x.text, sig: x.sig };
-      });
-    } else {
-      rows = ((await res.json()).messages || []).map((x) => ({ from: x.from, seq: x.seq, ts: x.ts, nonce: String(x.nonce), text: x.text, sig: x.sig }));
-    }
-    return rows.filter((x) => x.from === REFEREE && x.text && x.sig)
-      .map((x) => ({ seq: x.seq, ts: x.ts, nonce: x.nonce, text: x.text, sig: x.sig }));
+    return res;
   } finally { clearTimeout(timer); }
 }
-
-async function source() {
-  try {
-    const got = await Promise.all(ROOMS.map(fetchRoom));
-    const rooms = {};
-    ROOMS.forEach((r, i) => { rooms[r] = got[i]; });
-    return { rooms, live: true, when: new Date().toISOString().slice(0, 19) + "Z" };
-  } catch (e) {
-    if (!SNAP) throw e;
-    return { rooms: SNAP.rooms, live: false, when: SNAP.built };
+const keepRow = (x) => ({ seq: Number(x.seq), ts: x.ts, nonce: String(x.nonce), text: x.text, sig: x.sig });
+async function readRoom(room) {
+  const how = FIRST_READ[room];
+  if (how === "export") {
+    const res = await getJSON(`https://technocore.chat/r/${room}/export`);
+    // Nonces can exceed 2^53: take their digits from the raw line, never from a parsed number.
+    return (await res.text()).split("\n").filter(Boolean).map((l) => {
+      const x = JSON.parse(l), m = l.match(/"nonce"\s*:\s*"?(\d+)/);
+      return { from: x.from, seq: x.seq, ts: x.ts, nonce: m ? m[1] : String(x.nonce), text: x.text, sig: x.sig };
+    }).filter((x) => x.from === REFEREE && x.text && x.sig).map(keepRow);
   }
+  const res = await getJSON(`https://technocore.chat/r/${room}?format=json&limit=${how}`);
+  return ((await res.json()).messages || []).filter((x) => x.from === REFEREE && x.text && x.sig).map(keepRow);
+}
+async function readNewer(room, since) {
+  const res = await getJSON(`https://technocore.chat/r/${room}?format=json&since=${since}&limit=200`);
+  const d = await res.json();
+  const msgs = d.messages || [];
+  const gap = msgs.length && Number(msgs[0].seq) > since + 1 && Number(d.first_seq || 0) > since + 1;
+  return { gap, rows: msgs.filter((x) => x.from === REFEREE && x.text && x.sig).map(keepRow) };
 }
 
-function digest(rooms) {
-  const pub = didPub(REFEREE);
-  const out = {}; let ok = 0, bad = 0;
-  for (const room of ROOMS) {
-    out[room] = [];
-    for (const r of rooms[room] || []) {
-      if (!verified(room, r, pub)) { bad++; continue; }
-      let b; try { b = JSON.parse(r.text); } catch (e) { bad++; continue; }
-      if (typeof b.n !== "number") continue;
-      out[room].push(b); ok++;
-    }
-    out[room].sort((a, b) => a.n - b.n);
+const STORE = { rooms: {}, ok: 0, bad: 0, live: false, when: "" };
+function ingest(room, rows) {
+  const have = STORE.rooms[room] || (STORE.rooms[room] = { bySeq: new Map(), bodies: [] });
+  for (const r of rows) {
+    if (have.bySeq.has(r.seq)) continue;
+    if (!verified(room, r)) { STORE.bad++; continue; }
+    let b; try { b = JSON.parse(r.text); } catch (e) { STORE.bad++; continue; }
+    have.bySeq.set(r.seq, true);
+    if (typeof b.n !== "number") continue;
+    have.bodies.push(b); STORE.ok++;
   }
-  return { data: out, ok, bad };
+  have.bodies.sort((a, b) => a.n - b.n);
+  have.lastSeq = Math.max(0, ...have.bySeq.keys());
+}
+async function loadAll() {
+  const got = await Promise.all(ROOMS.map(readRoom));
+  ROOMS.forEach((r) => { STORE.rooms[r] = null; });
+  STORE.ok = 0; STORE.bad = 0;
+  ROOMS.forEach((r, i) => ingest(r, got[i]));
+  STORE.live = true;
+  STORE.when = new Date().toISOString();
+}
+async function poll() {
+  try {
+    let refetch = false;
+    for (const room of ROOMS) {
+      const { gap, rows } = await readNewer(room, STORE.rooms[room].lastSeq);
+      if (gap) { refetch = true; break; }
+      ingest(room, rows);
+    }
+    if (refetch) await loadAll();
+    STORE.when = new Date().toISOString();
+    render();
+  } catch (e) {
+    $("mode-dot").className = "dot bad";
+    $("mode-text").textContent = `Could not reach technocore.chat (${e.message}); showing the last posts read, retrying`;
+  }
 }
 
 const fmt = (x, d = 2) => Number(x).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+const sgn = (x) => (x >= 0 ? "+" : "−") + fmt(Math.abs(x));
 const int = (x) => Number(x).toLocaleString("en-US");
-const short = (did) => did.replace("did:key:", "").slice(0, 10) + "…" + did.slice(-6);
+const short = (did) => did.replace("did:key:", "").slice(0, 8) + "…" + did.slice(-5);
 const sweepTime = (n) => new Date(OPEN_MS + n * 300000);
-const hhmm = (d) => d.toISOString().slice(5, 16).replace("T", " ") + " UTC";
+const utc = (d) => d.toISOString().slice(11, 16) + " UTC";
+const day = (d) => d.toISOString().slice(5, 10).replace("-", "/");
+function until(ms) {
+  const t = Math.max(0, ms - Date.now());
+  const d = Math.floor(t / 864e5), h = Math.floor(t % 864e5 / 36e5), m = Math.floor(t % 36e5 / 6e4);
+  return `${d}d ${h}h ${String(m).padStart(2, "0")}m`;
+}
 
-function places(top) {
-  const rows = []; let i = 0;
+// Tie groups of the published list. last=true when a group reaches row 25 (it may continue).
+function groups(top) {
+  const out = []; let i = 0;
   while (i < top.length) {
     let j = i;
     while (j + 1 < top.length && top[j + 1][1] === top[i][1]) j++;
-    for (let k = i; k <= j; k++) rows.push({ did: top[k][0], pnl: top[k][1], from: i + 1, to: j + 1, size: j - i + 1 });
+    out.push({ from: i + 1, to: j + 1, size: j - i + 1, score: +top[i][1], keys: top.slice(i, j + 1).map((x) => x[0]), last: j === top.length - 1 && top.length >= 25 });
     i = j + 1;
   }
-  return rows;
+  return out;
+}
+const placeLabel = (g) => (g.size === 1 ? `${g.from}` : g.last ? `${g.from}–${g.to}+` : `${g.from}–${g.to}`);
+
+function fits(pnl) {
+  const pts = new Map();
+  for (const p of pnl) for (const [did, v] of p.top || []) {
+    if (!pts.has(did)) pts.set(did, []);
+    pts.get(did).push([+p.mark, +v]);
+  }
+  const out = new Map();
+  for (const [did, s] of pts) out.set(did, positionFor(s));
+  return out;
 }
 
-function stripHTML(items) {
-  return items.map(([label, v, s]) => `<div><span class="label">${label}</span><span class="v">${v}</span><span class="s">${s || ""}</span></div>`).join("");
-}
-
+// Line chart drawn at the element's real width, so labels stay readable on phones.
 function line(svg, series, opts) {
-  const W = 640, H = +svg.getAttribute("viewBox").split(" ")[3], L = 58, R = 12, T = 12, B = 24;
-  // 縦軸を決める系列だけで範囲を取り、範囲の外の点は描かない（初日の評価値の外れ値で終値の線がつぶれないように）
+  const H = +svg.dataset.h || 200;
+  const W = Math.max(260, Math.round(svg.getBoundingClientRect().width || 640));
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const L = 48, R = 8, T = 14, B = 22, XT = W < 420 ? 2 : 4;
   const scaled = series.filter((s) => !s.noScale);
-  const xs = series.flatMap((s) => s.pts.map((p) => p[0])), ys = scaled.flatMap((s) => s.pts.map((p) => p[1])).concat(opts.hlines ? opts.hlines.map((h) => h.y) : []);
-  if (!xs.length) { svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle">No data</text>`; return; }
-  let x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const xs = series.flatMap((s) => s.pts.map((p) => p[0]));
+  const ys = scaled.flatMap((s) => s.pts.map((p) => p[1])).concat(opts.hlines ? opts.hlines.map((h) => h.y) : []);
+  if (!xs.length || !ys.length) { svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle">No data yet</text>`; return; }
+  let x0 = opts.xrange ? opts.xrange[0] : Math.min(...xs), x1 = opts.xrange ? opts.xrange[1] : Math.max(...xs);
+  let y0 = Math.min(...ys), y1 = Math.max(...ys);
   if (x1 === x0) x1 = x0 + 1;
   const pad = (y1 - y0) * 0.08 || Math.abs(y1) * 0.01 || 1; y0 -= pad; y1 += pad;
   const X = (x) => L + (x - x0) / (x1 - x0) * (W - L - R), Y = (y) => T + (1 - (y - y0) / (y1 - y0)) * (H - T - B);
   let g = "";
+  for (const [a, b] of opts.shade || []) g += `<rect x="${X(a)}" y="${T}" width="${Math.max(0, X(b) - X(a))}" height="${H - T - B}" fill="var(--win-bg)"/>`;
   for (let k = 0; k <= 4; k++) {
     const v = y0 + (y1 - y0) * k / 4, y = Y(v);
-    g += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y}" y2="${y}"/><text x="${L - 6}" y="${y + 3}" text-anchor="end">${opts.yfmt(v)}</text>`;
+    g += `<line class="grid-line" x1="${L}" x2="${W - R}" y1="${y}" y2="${y}"/><text x="${L - 6}" y="${y + 3.5}" text-anchor="end">${opts.yfmt(v)}</text>`;
   }
-  for (let k = 0; k <= 4; k++) {
-    const v = x0 + (x1 - x0) * k / 4;
-    g += `<text x="${X(v)}" y="${H - 6}" text-anchor="${k === 0 ? "start" : k === 4 ? "end" : "middle"}">${opts.xfmt(v)}</text>`;
+  for (let k = 0; k <= XT; k++) {
+    const v = x0 + (x1 - x0) * k / XT;
+    g += `<text x="${X(v)}" y="${H - 6}" text-anchor="${k === 0 ? "start" : k === XT ? "end" : "middle"}">${opts.xfmt(v)}</text>`;
   }
-  for (const h of opts.hlines || []) g += `<line x1="${L}" x2="${W - R}" y1="${Y(h.y)}" y2="${Y(h.y)}" stroke="${h.color}" stroke-width="1.2" stroke-dasharray="4 4" fill="none"/>`;
+  if (opts.zero && y0 < 0 && y1 > 0) g += `<line x1="${L}" x2="${W - R}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--muted)" stroke-width="1"/>`;
+  for (const h of opts.hlines || []) g += `<line x1="${L}" x2="${W - R}" y1="${Y(h.y)}" y2="${Y(h.y)}" stroke="${h.color}" stroke-width="1.2" stroke-dasharray="4 4"/>`;
   for (const s of series) {
     let pen = false;
     const d = s.pts.map((p) => {
       if (p[1] < y0 || p[1] > y1) { pen = false; return ""; }
       const seg = `${pen ? "L" : "M"}${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`; pen = true; return seg;
     }).join("");
-    g += `<path d="${d}" stroke="${s.color}" stroke-width="${s.w || 1.6}" fill="none" stroke-linejoin="round"/>`;
+    g += `<path d="${d}" stroke="${s.color}" stroke-width="${s.w || 1.6}" fill="none" stroke-linejoin="round" ${s.dash ? 'stroke-dasharray="6 4"' : ""}/>`;
     const last = s.pts[s.pts.length - 1];
     if (last && s.dot && last[1] >= y0 && last[1] <= y1) g += `<circle cx="${X(last[0])}" cy="${Y(last[1])}" r="3.2" fill="${s.color}"/>`;
+  }
+  for (const v of opts.vlines || []) {
+    const x = X(v.x), right = x > W - 90;
+    g += `<line x1="${x}" x2="${x}" y1="${T}" y2="${H - B}" stroke="${v.color}" stroke-width="${v.w || 1.2}" ${v.dash ? 'stroke-dasharray="3 3"' : ""}/>`;
+    if (v.label) g += `<text x="${right ? x - 4 : x + 4}" y="${T - 3 + (v.row || 0) * 11}" text-anchor="${right ? "end" : "start"}" style="fill:${v.color}">${v.label}</text>`;
   }
   svg.innerHTML = g;
 }
 
-let STATE = null;
+let VIEW = null;
+let sTouched = false;
+function derive() {
+  const price = STORE.rooms["d-close1-price"].bodies, state = STORE.rooms["d-close1-state"].bodies;
+  const pos = STORE.rooms["d-close1-positions"].bodies, pnl = STORE.rooms["d-close1-pnl"].bodies;
+  const lp = price[price.length - 1], ls = state[state.length - 1], lpos = pos[pos.length - 1], lpnl = pnl[pnl.length - 1];
+  const closes = price.filter((p) => p.ref && p.ref.px && p.n >= 1).map((p) => [p.n, +p.ref.px]);
+  const lo = closes.reduce((a, b) => (b[1] < a[1] ? b : a)), hi = closes.reduce((a, b) => (b[1] > a[1] ? b : a));
+  const F = fits(pnl);
+  const top = lpnl.top || [];
+  const keys = top.map(([did, v]) => ({ did, score: +v, fit: F.get(did) || { ok: false } }));
+  return { price, lp, ls, lpos, lpnl, pnl, closes, lo, hi, keys, groups: groups(top), mark: +lpnl.mark, ref: +lp.ref.px };
+}
+function atS(v, S) { return v.keys.map((k) => ({ ...k, s: k.fit.ok ? project(k.score, k.fit.pos, v.mark, S) : null })); }
+function bestVisible(v, S) { let m = -Infinity; for (const k of atS(v, S)) if (k.s !== null && k.s > m) m = k.s; return m; }
+function placeThree(v, S) { const s = atS(v, S).filter((k) => k.s !== null).map((k) => k.s).sort((a, b) => b - a); return s.length >= 3 ? s[2] : NaN; }
+function podiumAt(v, S) {
+  const cands = atS(v, S).filter((k) => k.s !== null).map((k) => ({ who: `<span class="did">${short(k.did)}</span>`, s: k.s, kind: "pub" }));
+  cands.push({ who: `Best possible long<em>bought at ${fmt(v.lo[1])}, sweep ${int(v.lo[0])} · not published</em>`, s: idealLong(S, v.lo[1]), kind: "unseen" });
+  cands.push({ who: `Best possible short<em>sold at ${fmt(v.hi[1])}, sweep ${int(v.hi[0])} · not published</em>`, s: idealShort(S, v.hi[1]), kind: "unseen" });
+  cands.sort((a, b) => b.s - a.s);
+  const rows = [];
+  for (const c of cands) {
+    const prev = rows[rows.length - 1];
+    if (prev && c.kind === "pub" && prev.kind === "pub" && Math.abs(prev.s - c.s) < 0.005) { prev.count++; continue; }
+    rows.push({ ...c, count: 1 });
+  }
+  return rows;
+}
+
+function renderHero() {
+  const v = VIEW, S = +$("s-range").value;
+  const lo = +$("s-range").min, hi = +$("s-range").max;
+  $("s-value").innerHTML = `${fmt(S)}<small>${S === v.ref ? "NVDA now" : `${sgn(S - v.ref)} vs now`}</small>`;
+  $("th-s").textContent = `At ${fmt(S)}`;
+  const xs = []; for (let x = lo; x <= hi + 1e-9; x += (hi - lo) / 160) xs.push(x);
+  const beLong = crossing((x) => idealLong(x, v.lo[1]) - bestVisible(v, x), lo, hi, 0.01);
+  const shade = []; let run = null;
+  for (const x of xs) {
+    const w = idealLong(x, v.lo[1]) > bestVisible(v, x);
+    if (w && run === null) run = x;
+    if (!w && run !== null) { shade.push([run, x]); run = null; }
+  }
+  if (run !== null) shade.push([run, hi]);
+  line($("chart-payoff"), [
+    { pts: xs.map((x) => [x, idealLong(x, v.lo[1])]), color: "var(--up)", dash: true },
+    { pts: xs.map((x) => [x, idealShort(x, v.hi[1])]), color: "var(--down)", dash: true },
+    { pts: xs.map((x) => [x, placeThree(v, x)]).filter((p) => !Number.isNaN(p[1])), color: "var(--tie)" },
+    { pts: xs.map((x) => [x, bestVisible(v, x)]).filter((p) => Number.isFinite(p[1])), color: "var(--accent)", w: 2.4 },
+  ], { xrange: [lo, hi], yfmt: (y) => fmt(y, 0), xfmt: (x) => fmt(x), zero: true, shade,
+       vlines: [{ x: v.ref, color: "var(--muted)", dash: true, label: "now" }, { x: S, color: "var(--ink)", w: 1.5, label: "S", row: 1 }] });
+  const rows = podiumAt(v, S);
+  let place = 1;
+  $("podium").innerHTML = rows.slice(0, 4).map((r) => {
+    const label = r.count > 1 ? `${place}–${place + r.count - 1}` : `${place}`;
+    const cls = r.kind === "unseen" ? "unseen" : place <= 3 ? "medal" : "";
+    const html = `<div class="prow ${cls}"><span class="num">${label}</span><span class="who">${r.who}${r.count > 1 ? ` <span class="pill tie">× ${r.count}</span>` : ""}</span><span class="num ${r.s >= 0 ? "up" : "down"}">${sgn(r.s)}</span></div>`;
+    place += r.count;
+    return html;
+  }).join("");
+  $("podium-label").textContent = `Top scores at S = ${fmt(S)}`;
+  const leader = bestVisible(v, S), bestLong = idealLong(S, v.lo[1]);
+  let text = bestLong > leader
+    ? `At ${fmt(S)}, <strong>an unpublished long from the record low would lead</strong> (${sgn(bestLong)} vs ${sgn(leader)}).`
+    : `At ${fmt(S)}, the published leader holds (${sgn(leader)}).`;
+  if (beLong !== null) text += ` Longs from ${fmt(v.lo[1])} take the lead above <strong>${fmt(beLong)}</strong>.`;
+  const unproj = v.keys.filter((k) => !k.fit.ok).length;
+  if (unproj) text += ` <span class="muted">${unproj} published key${unproj > 1 ? "s are" : " is"} trading, not projected.</span>`;
+  $("verdict").innerHTML = text;
+  document.querySelectorAll("[data-ats]").forEach((td) => {
+    const k = v.keys.find((x) => x.did === td.dataset.ats);
+    if (!k || !k.fit.ok) { td.textContent = "–"; td.className = "num muted"; return; }
+    const s = project(k.score, k.fit.pos, v.mark, S);
+    td.textContent = sgn(s); td.className = "num " + (s >= 0 ? "up" : "down");
+  });
+  renderCalc();
+}
+
+function renderCalc() {
+  if (!VIEW) return;
+  const v = VIEW, S = +$("s-range").value;
+  const side = $("c-side").value, entry = +$("c-entry").value, qty = +$("c-qty").value;
+  if (!(entry > 0) || !(qty > 0)) { $("calc-out").textContent = "Enter an entry price and contracts."; return; }
+  const pay = (x) => (side === "L" ? qty * (x - entry) : qty * (entry - x));
+  const score = pay(S), best = bestVisible(v, S), third = placeThree(v, S);
+  const where = score > best ? "above every published key" : score >= third ? "inside the published top 3" : "below the published top 3";
+  const beat = crossing((x) => pay(x) - bestVisible(v, x), +$("s-range").min, +$("s-range").max, 0.01);
+  $("calc-out").innerHTML = `<strong class="${score >= 0 ? "up" : "down"}">${sgn(score)}</strong> at ${fmt(S)} (before fees), ${where}.` +
+    (beat !== null ? ` Passes the published leader at ${fmt(beat)}.` : "");
+}
+
+function renderBoard() {
+  const v = VIEW;
+  $("board-sub").textContent = `sweep ${int(v.lpnl.n)} · mark ${fmt(v.mark)}`;
+  const rowFor = (did, score, place, cls, extra) => {
+    const k = v.keys.find((x) => x.did === did), f = k && k.fit;
+    const est = f && f.ok ? `${f.pos < 0 ? "short" : "long"} ${fmt(Math.abs(f.pos))} <span class="pill est" title="fitted over ${f.n} sweeps">R² ${f.r2.toFixed(3)}</span>` : `<span class="muted">trading</span>`;
+    return `<tr class="${cls}" data-did="${did}"><td class="num">${place}</td><td><span class="did" title="${did}">${short(did)}</span><button class="btn-s" type="button" data-copy="${did}" aria-label="Copy key">Copy</button>${extra || ""}</td><td class="num ${score >= 0 ? "up" : "down"}">${sgn(score)}</td><td class="num col-est">${est}</td><td class="num" data-ats="${did}">–</td></tr>`;
+  };
+  let html = "";
+  for (const g of v.groups) {
+    const cls = g.from <= 3 ? "prize" : "";
+    if (g.size === 1) { html += rowFor(g.keys[0], g.score, placeLabel(g), cls); continue; }
+    const tag = ` <span class="pill tie">× ${g.size}${g.last ? "+" : ""}</span><button class="btn-s" type="button" data-group="${g.from}" aria-expanded="false">All</button>`;
+    html += rowFor(g.keys[0], g.score, placeLabel(g), cls, tag);
+    html += g.keys.slice(1).map((did) => rowFor(did, g.score, "", `member ${cls}`).replace("<tr ", `<tr hidden data-member="${g.from}" `)).join("");
+  }
+  $("board").innerHTML = html;
+}
+
+function renderRest() {
+  const v = VIEW;
+  $("strip").innerHTML = [
+    ["Sweep", `${int(v.lp.n)}<span class="muted" style="font-size:12px"> / ${int(LOCK_N)}</span>`, `next ≈ ${utc(sweepTime(v.lp.n + 1))}`],
+    ["NVDA now", fmt(v.ref), `trade ${v.lp.ref.time.slice(11, 16)} UTC`],
+    ["Mark", fmt(v.mark), "contest price"],
+    ["Locks in", `<span id="cd-lock">${until(LOCK_MS)}</span>`, "4 Oct 09:00 UTC"],
+    ["S in", `<span id="cd-s">${until(S_MS)}</span>`, "4 Oct 10:00 UTC"],
+    ["Keys", `${(v.ls.owners / 1e6).toFixed(2)}M`, `${Math.round(v.lpos.longs / 1e3)}k long · ${Math.round(v.lpos.shorts / 1e3)}k short`],
+  ].map(([l, val, s]) => `<div><span class="label">${l}</span><span class="v">${val}</span><span class="s">${s}</span></div>`).join("");
+  line($("chart-px"), [
+    { pts: v.price.filter((p) => p.global).map((p) => [p.n, +p.global]), color: "var(--muted)", w: 1.1, noScale: true },
+    { pts: v.closes, color: "var(--accent)", dot: true },
+  ], { yfmt: (y) => fmt(y), xfmt: (x) => day(sweepTime(Math.round(x))), hlines: [{ y: v.lo[1], color: "var(--up)" }, { y: v.hi[1], color: "var(--down)" }] });
+  $("records").innerHTML = [
+    ["Record low", `${fmt(v.lo[1])} · sweep ${int(v.lo[0])}`],
+    ["Record high", `${fmt(v.hi[1])} · sweep ${int(v.hi[0])}`],
+    ["Next limits", v.lp.limits ? `${fmt(v.lp.limits[0])}–${fmt(v.lp.limits[1])}` : "–"],
+  ].map(([k, val]) => `<div><dt>${k}</dt><dd class="num">${val}</dd></div>`).join("");
+  const groupsP = [];
+  for (const [did, q] of v.lpos.top || []) {
+    const g = groupsP[groupsP.length - 1];
+    if (g && g.q === q) g.keys.push(did); else groupsP.push({ q, keys: [did] });
+  }
+  $("positions").innerHTML = groupsP.map((g) => {
+    const q = +g.q;
+    return `<tr><td><span class="did" title="${g.keys.join(" ")}">${short(g.keys[0])}</span>${g.keys.length > 1 ? ` <span class="pill tie">× ${g.keys.length}</span>` : ""}</td><td class="${q < 0 ? "down" : "up"}">${q < 0 ? "Short" : "Long"}</td><td class="num">${fmt(Math.abs(q))}</td><td class="num">${fmt(Math.abs(q) * v.ref, 0)}</td></tr>`;
+  }).join("");
+  $("recipe").textContent = [
+    `# referee: ${REFEREE}`,
+    `curl -s 'https://technocore.chat/r/d-close1-pnl?format=json&limit=1'`,
+    `# verify ed25519(sig) over "d-close1-pnl|<nonce>|<text>"; keep nonces as digit strings`,
+  ].join("\n");
+}
+
+function render() {
+  VIEW = derive();
+  const r = $("s-range");
+  r.min = Math.floor(Math.min(VIEW.lo[1], VIEW.ref) * 0.98); r.max = Math.ceil(Math.max(VIEW.hi[1], VIEW.ref) * 1.02);
+  if (!sTouched) r.value = VIEW.ref.toFixed(2);
+  $("s-chips").innerHTML = [["Now", VIEW.ref], ["Record low", VIEW.lo[1]], ["Record high", VIEW.hi[1]]]
+    .map(([l, x]) => `<button class="chip" type="button" data-s="${x}" data-now="${l === "Now"}">${l}<span class="num">${fmt(x)}</span></button>`).join("");
+  if (!$("c-entry").value) { $("c-entry").value = VIEW.ref.toFixed(2); $("c-qty").value = (Math.floor(10000 / VIEW.ref * 100) / 100).toFixed(2); }
+  $("mode-dot").className = "dot " + (STORE.bad ? "bad" : "ok");
+  const t = new Date(STORE.when);
+  $("mode-text").textContent = `${STORE.live ? "Live" : "Snapshot"} · ${int(STORE.ok)} referee posts verified${STORE.bad ? ` · ${int(STORE.bad)} rejected` : ""} · ${utc(t)}`;
+  renderBoard(); renderRest(); renderHero(); renderFind();
+}
+
 function renderFind() {
-  const q = $("find-did").value.trim();
-  const out = $("find-out");
+  const q = $("find-did").value.trim(), out = $("find-out");
   document.querySelectorAll("tr.hit").forEach((tr) => tr.classList.remove("hit"));
-  if (!q || !STATE) { out.textContent = ""; return; }
-  const row = STATE.rows.find((r) => r.did === q || r.did.endsWith(q));
-  const pos = STATE.posTop.find((p) => p[0] === q || p[0].endsWith(q));
-  if (row) {
-    const tr = document.querySelector(`tr[data-did="${row.did}"]`);
+  if (!q || !VIEW) { out.textContent = ""; return; }
+  const g = VIEW.groups.find((x) => x.keys.some((d) => d === q || d.endsWith(q)));
+  const inPos = (VIEW.lpos.top || []).find((x) => x[0] === q || x[0].endsWith(q));
+  if (g) {
+    const did = g.keys.find((d) => d === q || d.endsWith(q));
+    document.querySelectorAll(`tr[data-member="${g.from}"]`).forEach((tr) => { tr.hidden = false; });
+    const tr = document.querySelector(`tr[data-did="${did}"]`);
     if (tr) { tr.classList.add("hit"); tr.scrollIntoView({ block: "nearest" }); }
-    out.innerHTML = `Found at place ${row.from === row.to ? row.from : row.from + "–" + row.to} with ${fmt(row.pnl)} POLF at the mark (sweep ${STATE.n}).`;
+    out.textContent = `Place ${placeLabel(g)}, ${sgn(g.score)} at the mark.`;
   } else {
-    out.textContent = `Not in the referee's published top 25 at sweep ${STATE.n}.` + (pos ? ` It is among the ten largest positions (${pos[1]}).` : " Keys below 25th place are not published.");
+    out.textContent = "Not in the published top 25." + (inPos ? ` One of the ten largest positions (${inPos[1]}).` : " Try “Your position at S”.");
   }
 }
 
-async function main() {
-  let src;
-  try { src = await source(); }
-  catch (e) { $("mode-text").textContent = "Could not load referee posts."; $("mode-dot").className = "dot bad"; return; }
-  const { data, ok, bad } = digest(src.rooms);
-  const price = data["d-close1-price"], state = data["d-close1-state"], pos = data["d-close1-positions"], pnl = data["d-close1-pnl"];
-  $("mode-dot").className = "dot " + (bad ? "bad" : "ok");
-  $("mode-text").textContent = `${src.live ? "Live from technocore.chat" : "Snapshot"} · ${int(ok)} referee posts verified${bad ? ` · ${int(bad)} rejected` : ""} · ${src.when.replace("T", " ").replace("Z", " UTC")}`;
-
-  const lp = price[price.length - 1], ls = state[state.length - 1], lpos = pos[pos.length - 1], lpnl = pnl[pnl.length - 1];
-  const closes = price.filter((p) => p.ref && p.ref.px).map((p) => [p.n, +p.ref.px]);
-  const lo = closes.reduce((a, b) => (b[1] < a[1] ? b : a)), hi = closes.reduce((a, b) => (b[1] > a[1] ? b : a));
-  const toS = Math.max(0, S_MS - Date.parse(src.when));
-  $("strip").innerHTML = stripHTML([
-    ["Sweep", int(lp.n), hhmm(sweepTime(lp.n))],
-    ["NVDA close", fmt(lp.ref.px), "last trade " + lp.ref.time.slice(11, 19) + " UTC"],
-    ["Mark", fmt(lp.global), "contest average price"],
-    ["Owner keys", int(ls.owners), "minted by sweep " + int(ls.n)],
-    ["Keys long / short", int(lpos.longs) + " / " + int(lpos.shorts), "open " + fmt(lpos.open, 0) + " POLF"],
-    ["To the lock", int(Math.max(0, LOCK_N - lp.n)) + " sweeps", "S in " + Math.floor(toS / 864e5) + " d " + Math.floor(toS % 864e5 / 36e5) + " h"],
-  ]);
-
-  const rows = places(lpnl.top || []);
-  const posTop = lpos.top || [];
-  STATE = { rows, posTop, n: lpnl.n };
-  $("board-sub").textContent = `sweep ${int(lpnl.n)} · mark ${fmt(lpnl.mark)}`;
-  $("board").innerHTML = rows.map((r) => {
-    const place = r.from === r.to ? `${r.from}` : `${r.from}–${r.to}`;
-    const p = posTop.find((x) => x[0] === r.did);
-    const notes = [r.size > 1 ? `<span class="pill tie">tied × ${r.size}</span>` : "", p ? `<span class="pill pos">position ${p[1]}</span>` : ""].join(" ");
-    const cls = r.from <= 3 ? "prize" : "";
-    return `<tr class="${cls}" data-did="${r.did}"><td class="num">${place}</td><td><span class="did" title="${r.did}">${short(r.did)}</span><button class="copy" type="button" data-copy="${r.did}">Copy</button></td><td class="num ${+r.pnl >= 0 ? "up" : "down"}">${fmt(r.pnl)}</td><td>${notes}</td></tr>`;
-  }).join("");
+function wire() {
+  $("s-range").addEventListener("input", () => { sTouched = true; renderHero(); });
+  $("s-chips").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-s]"); if (!b) return;
+    $("s-range").value = (+b.dataset.s).toFixed(2); sTouched = b.dataset.now !== "true"; renderHero();
+  });
+  for (const id of ["c-side", "c-entry", "c-qty"]) $(id).addEventListener("input", renderCalc);
+  $("find-did").addEventListener("input", renderFind);
   $("board").addEventListener("click", async (ev) => {
+    const t = ev.target.closest("button[data-group]");
+    if (t) {
+      const open = t.getAttribute("aria-expanded") !== "true";
+      document.querySelectorAll(`tr[data-member="${t.dataset.group}"]`).forEach((tr) => { tr.hidden = !open; });
+      t.setAttribute("aria-expanded", String(open)); t.textContent = open ? "Hide" : "All";
+      return;
+    }
     const b = ev.target.closest("button[data-copy]");
     if (!b) return;
     try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = "Copied"; }
     catch (e) { const r = document.createRange(); r.selectNodeContents(b.previousElementSibling); getSelection().removeAllRanges(); getSelection().addRange(r); b.textContent = "Selected"; }
     setTimeout(() => { b.textContent = "Copy"; }, 1400);
   });
-  $("find-did").addEventListener("input", renderFind);
+  let rz = null;
+  addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { if (VIEW) { renderHero(); renderRest(); } }, 150); });
+  setInterval(() => {
+    const a = $("cd-lock"), b = $("cd-s");
+    if (a) a.textContent = until(LOCK_MS);
+    if (b) b.textContent = until(S_MS);
+  }, 30000);
+}
 
-  const nfmt = (v) => hhmm(sweepTime(Math.round(v))).slice(0, 11);
-  line($("chart-board"), [
-    { pts: pnl.filter((p) => p.top && p.top.length).map((p) => [p.n, +p.top[0][1]]), color: "var(--accent)", dot: true },
-    { pts: pnl.filter((p) => p.top && p.top.length).map((p) => [p.n, +p.top[p.top.length - 1][1]]), color: "var(--tie)", dot: true },
-  ], { yfmt: (v) => fmt(v, 0), xfmt: nfmt });
-  line($("chart-px"), [
-    { pts: price.filter((p) => p.global).map((p) => [p.n, +p.global]), color: "var(--muted)", w: 1.1, noScale: true },
-    { pts: closes, color: "var(--accent)", dot: true },
-  ], { yfmt: (v) => fmt(v), xfmt: nfmt, hlines: [{ y: lo[1], color: "var(--up)" }, { y: hi[1], color: "var(--down)" }] });
-  $("records").innerHTML = [
-    ["Lowest sweep close", `${fmt(lo[1])} · sweep ${int(lo[0])} · ${hhmm(sweepTime(lo[0]))}`],
-    ["Highest sweep close", `${fmt(hi[1])} · sweep ${int(hi[0])} · ${hhmm(sweepTime(hi[0]))}`],
-    ["Next sweep limits", lp.limits ? `${fmt(lp.limits[0])} – ${fmt(lp.limits[1])}` : "–"],
-  ].map(([k, v]) => `<div><dt>${k}</dt><dd class="num">${v}</dd></div>`).join("");
-  line($("chart-owners"), [{ pts: state.map((s) => [s.n, +s.owners]), color: "var(--accent)", dot: true }],
-    { yfmt: (v) => (v >= 1e6 ? (v / 1e6).toFixed(1) + "M" : Math.round(v / 1e3) + "k"), xfmt: nfmt });
-  line($("chart-oi"), [
-    { pts: pos.map((p) => [p.n, +p.longs]), color: "var(--up)", dot: true },
-    { pts: pos.map((p) => [p.n, +p.shorts]), color: "var(--down)", dot: true },
-  ], { yfmt: (v) => Math.round(v / 1e3) + "k", xfmt: nfmt });
-
-  $("recipe").textContent = [
-    `# referee key (pinned in the contest seed)`,
-    `# ${REFEREE}`,
-    `curl -s https://technocore.chat/r/d-close1-pnl/export | tail -1`,
-    `# keep lines whose "from" is the referee key, then verify with ed25519:`,
-    `#   message   = room + "|" + nonce + "|" + text      e.g. "d-close1-pnl|<nonce>|<text>"`,
-    `#   signature = base64url(sig), public key = did:key (multicodec ed25519)`,
-  ].join("\n");
-  $("built").textContent = src.live
-    ? `Read live from technocore.chat at ${src.when.replace("T", " ").replace("Z", " UTC")}. Reload for the latest sweep.`
-    : `Snapshot of the referee rooms taken ${src.when.replace("T", " ").replace("Z", " UTC")}. Opened where the page may reach technocore.chat, it reads the rooms live instead.`;
+async function main() {
+  wire();
+  try {
+    await loadAll();
+    setInterval(poll, POLL_MS);
+  } catch (e) {
+    if (!SNAP) { $("mode-dot").className = "dot bad"; $("mode-text").textContent = `Could not reach technocore.chat (${e.message}). Reload to try again.`; return; }
+    ROOMS.forEach((r) => ingest(r, (SNAP.rooms[r] || []).map(keepRow)));
+    STORE.live = false; STORE.when = SNAP.built;
+  }
+  render();
 }
 main();
 </script>
