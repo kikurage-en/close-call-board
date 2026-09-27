@@ -304,6 +304,11 @@ function crossing(f, lo, hi, step) {
   }
   return null;
 }
+// S once the referee has posted it (its "final" post), else the slider's value. A malformed final is ignored.
+function settleS(finalPost, slider) {
+  if (finalPost && finalPost.t === "final" && /^\d{1,7}(\.\d{1,2})?$/.test(String(finalPost.price))) return +finalPost.price;
+  return slider;
+}
 // --- math:end ---
 
 function b58decode(s) {
@@ -376,6 +381,7 @@ function ingest(room, rows) {
     if (!verified(room, r)) { STORE.bad++; continue; }
     let b; try { b = JSON.parse(r.text); } catch (e) { STORE.bad++; continue; }
     have.bySeq.set(r.seq, true);
+    if (b.t === "final") { STORE.final = b; STORE.ok++; continue; }
     if (typeof b.n !== "number") continue;
     have.bodies.push(b); STORE.ok++;
   }
@@ -520,9 +526,9 @@ function podiumAt(v, S) {
 }
 
 function renderHero() {
-  const v = VIEW, S = +$("s-range").value;
+  const v = VIEW, S = settleS(STORE.final, +$("s-range").value), fin = S !== +$("s-range").value || !!STORE.final;
   const lo = +$("s-range").min, hi = +$("s-range").max;
-  $("s-value").innerHTML = `${fmt(S)}<small>${S === v.ref ? "NVDA now" : `${sgn(S - v.ref)} vs now`}</small>`;
+  $("s-value").innerHTML = `${fmt(S)}<small>${STORE.final ? "final" : S === v.ref ? "NVDA now" : `${sgn(S - v.ref)} vs now`}</small>`;
   $("th-s").textContent = `At ${fmt(S)}`;
   const xs = []; for (let x = lo; x <= hi + 1e-9; x += (hi - lo) / 160) xs.push(x);
   const beLong = crossing((x) => idealLong(x, v.lo[1]) - bestVisible(v, x), lo, hi, 0.01);
@@ -549,12 +555,12 @@ function renderHero() {
     place += r.count;
     return html;
   }).join("");
-  $("podium-label").textContent = `Top scores at S = ${fmt(S)}`;
+  $("podium-label").textContent = STORE.final ? `Scores at the final S = ${fmt(S)}` : `Top scores at S = ${fmt(S)}`;
   const leader = bestVisible(v, S), bestLong = idealLong(S, v.lo[1]);
-  let text = bestLong > leader
+  let text = (STORE.final ? `<strong>S is final: ${fmt(S)}</strong> (trade ${String((STORE.final.trade || {}).time || "").slice(11, 19)} UTC). ` : "") + (bestLong > leader
     ? `At ${fmt(S)}, <strong>an unpublished long from the record low would lead</strong> (${sgn(bestLong)} vs ${sgn(leader)}).`
-    : `At ${fmt(S)}, the published leader holds (${sgn(leader)}).`;
-  if (beLong !== null) text += ` Longs from ${fmt(v.lo[1])} take the lead above <strong>${fmt(beLong)}</strong>.`;
+    : `At ${fmt(S)}, the published leader holds (${sgn(leader)}).`);
+  if (beLong !== null && !STORE.final) text += ` Longs from ${fmt(v.lo[1])} take the lead above <strong>${fmt(beLong)}</strong>.`;
   const unproj = v.keys.filter((k) => !k.fit.ok).length;
   if (unproj) text += ` <span class="muted">${unproj} published key${unproj > 1 ? "s are" : " is"} trading, not projected.</span>`;
   $("verdict").innerHTML = text;
@@ -569,7 +575,7 @@ function renderHero() {
 
 function renderCalc() {
   if (!VIEW) return;
-  const v = VIEW, S = +$("s-range").value;
+  const v = VIEW, S = settleS(STORE.final, +$("s-range").value);
   const side = $("c-side").value, entry = +$("c-entry").value, qty = +$("c-qty").value;
   if (!(entry > 0) || !(qty > 0)) { $("calc-out").textContent = "Enter an entry price and contracts."; return; }
   const pay = (x) => (side === "L" ? qty * (x - entry) : qty * (entry - x));
@@ -606,7 +612,8 @@ function renderRest() {
     ["NVDA now", fmt(v.ref), `trade ${v.lp.ref.time.slice(11, 16)} UTC`],
     ["Mark", fmt(v.mark), "contest price"],
     ["Locks in", `<span id="cd-lock">${until(LOCK_MS)}</span>`, "4 Oct 09:00 UTC"],
-    ["S in", `<span id="cd-s">${until(S_MS)}</span>`, "4 Oct 10:00 UTC"],
+    STORE.final ? ["S (final)", fmt(STORE.final.price), `trade ${String((STORE.final.trade || {}).time || "").slice(11, 19)} UTC`]
+      : ["S in", `<span id="cd-s">${until(S_MS)}</span>`, "4 Oct 10:00 UTC"],
     ["Keys", `${(v.ls.owners / 1e6).toFixed(2)}M`, `${Math.round(v.lpos.longs / 1e3)}k long · ${Math.round(v.lpos.shorts / 1e3)}k short`],
   ].map(([l, val, s]) => `<div><span class="label">${l}</span><span class="v">${val}</span><span class="s">${s}</span></div>`).join("");
   line($("chart-px"), [
@@ -638,7 +645,10 @@ function render() {
   VIEW = derive();
   const r = $("s-range");
   r.min = Math.floor(Math.min(VIEW.lo[1], VIEW.ref) * 0.98); r.max = Math.ceil(Math.max(VIEW.hi[1], VIEW.ref) * 1.02);
-  if (!sTouched) r.value = VIEW.ref.toFixed(2);
+  const fs = settleS(STORE.final, NaN);
+  r.disabled = !Number.isNaN(fs);
+  if (!Number.isNaN(fs)) r.value = fs.toFixed(2); else if (!sTouched) r.value = VIEW.ref.toFixed(2);
+  $("s-chips").hidden = r.disabled;
   $("s-chips").innerHTML = [["Now", VIEW.ref], ["Record low", VIEW.lo[1]], ["Record high", VIEW.hi[1]]]
     .map(([l, x]) => `<button class="chip" type="button" data-s="${x}" data-now="${l === "Now"}">${l}<span class="num">${fmt(x)}</span></button>`).join("");
   if (!$("c-entry").value) { $("c-entry").value = VIEW.ref.toFixed(2); $("c-qty").value = (Math.floor(10000 / VIEW.ref * 100) / 100).toFixed(2); }
