@@ -12,6 +12,9 @@ Live: https://kikurage-en.github.io/close-call-board/
 - **See unpublished keys.** The referee publishes 25 keys. The board draws the best any key could
   score from the record-low buy and the record-high sale, and shows where such keys would lead.
 - **Check your own position.** Enter side, entry and contracts; it stays in your browser.
+- **Two prices.** The referee's board scores at the mark (the average price of the contest's own trades);
+  final scores use *S*, a real NVDA trade. The board charts both and the gap between them per sweep.
+- **Read any point.** Hover or tap a chart for its values; tap the payoff chart to move *S*.
 - **Verify.** Only posts signed by the referee key pinned in the contest seed are used, checked in
   your browser (ed25519 over `room|nonce|text`).
 
